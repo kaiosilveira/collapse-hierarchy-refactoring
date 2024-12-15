@@ -1,45 +1,10 @@
 [![Continuous Integration](https://github.com/kaiosilveira/collapse-hierarchy-refactoring/actions/workflows/ci.yml/badge.svg)](https://github.com/kaiosilveira/collapse-hierarchy-refactoring/actions/workflows/ci.yml)
 
-# Refactoring catalog repository template
-
-This is a quick template to help me get a new refactoring repo going.
-
-## Things to do after creating a repo off of this template
-
-1. Run `GITHUB_TOKEN=$(gh auth token) yarn tools:cli prepare-repository -r $(basename "$(pwd)")`. It will:
-
-- Update the `README.md` file with the actual repository name, CI badge, and commit history link
-- Update `package.json` with the repository's name and remote URL
-- Update the repo's homepage on GitHub with:
-  - A description
-  - A website link to https://github.com/kaiosilveira/refactoring
-  - The following labels: javascript, refactoring, collapse-hierarchy-refactoring
-
-2. Replace the lorem ipsum text sections below with actual text
-
-## Useful commands
-
-- Generate markdown containing a diff with patch information based on a range of commits:
-
-```bash
-yarn tools:cli generate-diff -f <first_commit_sha> -l <last_commit_sha>
-```
-
-- To generate the commit history table for the last section, including the correct links:
-
-```bash
-yarn tools:cli generate-cmt-table -r collapse-hierarchy-refactoring
-```
-
----
-
 ℹ️ _This repository is part of my Refactoring catalog based on Fowler's book with the same title. Please see [kaiosilveira/refactoring](https://github.com/kaiosilveira/refactoring) for more details._
 
 ---
 
 # Collapse Hierarchy
-
-**Formerly: Old name**
 
 <table>
 <thead>
@@ -51,7 +16,8 @@ yarn tools:cli generate-cmt-table -r collapse-hierarchy-refactoring
 <td>
 
 ```javascript
-result = initial.code;
+class Employee { ... }
+class Salesman extends Employee { ... }
 ```
 
 </td>
@@ -59,11 +25,7 @@ result = initial.code;
 <td>
 
 ```javascript
-result = newCode();
-
-function newCode() {
-  return 'new code';
-}
+class Employee { ... }
 ```
 
 </td>
@@ -71,46 +33,57 @@ function newCode() {
 </tbody>
 </table>
 
-**Inverse of: [Another refactoring](https://github.com/kaiosilveira/refactoring)**
-
-**Refactoring introduction and motivation** dolore sunt deserunt proident enim excepteur et cillum duis velit dolor. Aute proident laborum officia velit culpa enim occaecat officia sunt aute labore id anim minim. Eu minim esse eiusmod enim nulla Lorem. Enim velit in minim anim anim ad duis aute ipsum voluptate do nulla. Ad tempor sint dolore et ullamco aute nulla irure sunt commodo nulla aliquip.
+Often enough, simplicity pays off. This is also true when we reach clearer interfaces and relationships. The side-effect, though, is that sometimes we find out that we no longer need a certain hierarchies. This refactoring helps with collapsing those into the base class.
 
 ## Working example
 
-**Working example general explanation** proident reprehenderit mollit non voluptate ea aliquip ad ipsum anim veniam non nostrud. Cupidatat labore occaecat labore veniam incididunt pariatur elit officia. Aute nisi in nulla non dolor ullamco ut dolore do irure sit nulla incididunt enim. Cupidatat aliquip minim culpa enim. Fugiat occaecat qui nostrud nostrud eu exercitation Lorem pariatur fugiat ea consectetur pariatur irure. Officia dolore veniam duis duis eu eiusmod cupidatat laboris duis ad proident adipisicing. Minim veniam consectetur ut deserunt fugiat id incididunt reprehenderit.
+Our working example is a simple program that contains a class hierarchy formed by `Person` and `Student`, with the only difference being that `Student` has an associated `age`, while `Person` does not. Our goal is to collapse `Student` into `Person`.
 
 ### Test suite
 
-Occaecat et incididunt aliquip ex id dolore. Et excepteur et ea aute culpa fugiat consectetur veniam aliqua. Adipisicing amet reprehenderit elit qui.
-
-```javascript
-describe('functionBeingRefactored', () => {
-  it('should work', () => {
-    expect(0).toEqual(1);
-  });
-});
-```
-
-Magna ut tempor et ut elit culpa id minim Lorem aliqua laboris aliqua dolor. Irure mollit ad in et enim consequat cillum voluptate et amet esse. Fugiat incididunt ea nulla cupidatat magna enim adipisicing consequat aliquip commodo elit et. Mollit aute irure consequat sunt. Dolor consequat elit voluptate aute duis qui eu do veniam laborum elit quis.
+The test suite is pretty simple and covers the getters of each class. That's all we need to be safe to proceed.
 
 ### Steps
 
-**Step 1 description** mollit eu nulla mollit irure sint proident sint ipsum deserunt ad consectetur laborum incididunt aliqua. Officia occaecat deserunt in aute veniam sunt ad fugiat culpa sunt velit nulla. Pariatur anim sit minim sit duis mollit.
+We start by pulling up `age` from `Student` to `Person`:
 
 ```diff
-diff --git a/src/price-order/index.js b/src/price-order/index.js
-@@ -3,6 +3,11 @@
--module.exports = old;
-+module.exports = new;
+diff --git Person
+ export class Person {
+-  constructor(name) {
++  constructor(name, age) {
+     this.name = name;
++    this.age = age;
+   }
+ }
+
+diff --git Student...
+ export class Student extends Person {
+   constructor(name, age) {
+-    super(name);
+-    this.age = age;
++    super(name, age);
+   }
+ }
 ```
 
-**Step n description** mollit eu nulla mollit irure sint proident sint ipsum deserunt ad consectetur laborum incididunt aliqua. Officia occaecat deserunt in aute veniam sunt ad fugiat culpa sunt velit nulla. Pariatur anim sit minim sit duis mollit.
+Then, we update the calling code to use `Person` instead of `Student`:
 
 ```diff
-diff --git a/src/price-order/index.js b/src/price-order/index.js
-@@ -3,6 +3,11 @@
--module.exports = old;
-+module.exports = new;
+diff --git client...
+-const student = new Student('John Doe', 25);
++const student = new Person('John Doe', 25);
+ console.log(`Student name: ${student.name}, age: ${student.age}`);
+```
+
+Which free us remove the, now unused, `Student` class:
+
+```diff
+-export class Student extends Person {
+-  constructor(name, age) {
+-    super(name, age);
+-  }
+-}
 ```
 
 And that's it!
@@ -119,10 +92,10 @@ And that's it!
 
 Below there's the commit history for the steps detailed above.
 
-| Commit SHA                                                                  | Message                  |
-| --------------------------------------------------------------------------- | ------------------------ |
-| [cmt-sha-1](https://github.com/kaiosilveira/collapse-hierarchy-refactoring/commit-SHA-1) | description of commit #1 |
-| [cmt-sha-2](https://github.com/kaiosilveira/collapse-hierarchy-refactoring/commit-SHA-2) | description of commit #2 |
-| [cmt-sha-n](https://github.com/kaiosilveira/collapse-hierarchy-refactoring/commit-SHA-n) | description of commit #n |
+| Commit SHA                                                                                                                | Message                                                  |
+| ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| [0e5ea86](https://github.com/kaiosilveira/collapse-hierarchy-refactoring/commit/0e5ea867ed8da91f1eaa72ce8676330c7d50cfec) | pull up `age` from `Student` to `Person`                 |
+| [ae45f4d](https://github.com/kaiosilveira/collapse-hierarchy-refactoring/commit/ae45f4d8e5816bc085837b72d320944b6d661e93) | update calling code to use `Person` instead of `Student` |
+| [ba4019a](https://github.com/kaiosilveira/collapse-hierarchy-refactoring/commit/ba4019a21cd7da55f844d5cf607d0f266cef7bc9) | remove unused `Student` class                            |
 
 For the full commit history for this project, check the [Commit History tab](https://github.com/kaiosilveira/collapse-hierarchy-refactoring/commits/main).
