@@ -1,4 +1,4 @@
-import { Student } from './student/index.js';
+import { Person } from './person/index.js';
 
-const student = new Student('John Doe', 25);
+const student = new Person('John Doe', 25);
 console.log(`Student name: ${student.name}, age: ${student.age}`);
